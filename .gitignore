@@ -31,3 +31,5 @@ bin/
 notesonproject.md
 lib/
 ExpenseTrackerApp.iml
+
+.idea/
