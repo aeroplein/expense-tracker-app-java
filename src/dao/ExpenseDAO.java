@@ -77,7 +77,7 @@ public class ExpenseDAO {
         String dateFilter = switch (period){
             case "DAILY"    -> " AND e.expense_date=CURRENT_DATE";
             case "WEEKLY"   -> " AND e.expense_date >=CURRENT_DATE- INTERVAL '7 days'";
-            case "MONTLY"   -> " AND e.expense_date >= DATE_TRUNC('month', CURRENT_DATE')";
+            case "MONTHLY"  -> " AND e.expense_date >= DATE_TRUNC('month', CURRENT_DATE)";
             default -> "";
         };
 
@@ -85,7 +85,7 @@ public class ExpenseDAO {
                 """
                 SELECT e.*, c.name AS category_name
                 FROM expenses e
-                LEFT JOIN categories ON e.category_id=c.id
+                LEFT JOIN categories c ON e.category_id=c.id
                 WHERE e.user_id=?
                 """ + dateFilter + """
                 ORDER BY e.expense_date DESC, e.created_at DESC
@@ -106,10 +106,10 @@ public class ExpenseDAO {
                 """
                 SELECT c.name, SUM(e.amount) AS total
                 FROM expenses e
-                JOIN categories ON e.category_id = c.id
+                JOIN categories c ON e.category_id = c.id
                 WHERE e.user_id=?
                 AND e.expense_date>=DATE_TRUNC('month', CURRENT_DATE)
-                GROUP_BY c.name
+                GROUP BY c.name
                 ORDER BY total DESC""";
         Map<String, Double> map = new LinkedHashMap<>();
         try(PreparedStatement ps=connection.prepareStatement(sql)){

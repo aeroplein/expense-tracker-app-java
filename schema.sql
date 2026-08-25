@@ -8,7 +8,7 @@ CREATE TABLE users (
 CREATE TABLE categories(
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
-    color_hex VARCHAR(7) DEFAULT '#8888888',
+    color_hex VARCHAR(7) DEFAULT '#888888',
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE(name, user_id)
 );
@@ -35,3 +35,4 @@ VALUES
 ('Clothing', '#F9F6C4',  1),
 ('Entertainment', '#44ACFF', 1),
 ('Other', '#EDFFF0', 1)
+;
