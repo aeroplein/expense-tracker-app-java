@@ -87,9 +87,7 @@ public class ExpenseDAO {
                 FROM expenses e
                 LEFT JOIN categories c ON e.category_id=c.id
                 WHERE e.user_id=?
-                """ + dateFilter + """
-                ORDER BY e.expense_date DESC, e.created_at DESC
-                """;
+                """ + dateFilter + "\nORDER BY e.expense_date DESC, e.created_at DESC";
 
         List<Expense> list = new ArrayList<>();
         try(PreparedStatement ps= connection.prepareStatement(sql)){
