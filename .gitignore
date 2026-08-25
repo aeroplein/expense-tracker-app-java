@@ -29,7 +29,7 @@ bin/
 .DS_Store
 
 notesonproject.md
-lib/
+lib/*
 ExpenseTrackerApp.iml
 
 .idea/

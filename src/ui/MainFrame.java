@@ -3,8 +3,8 @@ package ui;
 import db.DBConnection;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
+import java.io.File;
 import ui.actions.ExpensePanelActions;
 
 
@@ -15,14 +15,15 @@ public class MainFrame extends JFrame {
 
     public MainFrame(){
         super("Personal Expense Tracker");
+        applyAppIcon();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1000, 650);
+        setSize(1100, 700);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(0,0));
-        initCenterPanel();
+        getContentPane().setBackground(UIStyles.SOFT_CREAM);
         initMenuBar();
-        initToolbar();
         initStatusBar();
+        initCenterPanel();
         addWindowListener(new java.awt.event.WindowAdapter(){
             @Override
             public void windowClosing(java.awt.event.WindowEvent e){
@@ -33,9 +34,15 @@ public class MainFrame extends JFrame {
 
     private void initMenuBar(){
         JMenuBar menuBar = new JMenuBar();
+        menuBar.setBackground(UIStyles.SURFACE);
+        menuBar.setForeground(UIStyles.TEXT);
+        menuBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIStyles.BORDER));
         JMenu fileMenu = new JMenu("File");
+        fileMenu.setForeground(UIStyles.TEXT);
         JMenuItem exportItem = new JMenuItem("Export to CSV.");
         JMenuItem exitItem = new JMenuItem("Exit");
+        UIStyles.styleMenuItem(exportItem);
+        UIStyles.styleMenuItem(exitItem);
         exportItem.addActionListener(e->expenseActions.exportToCSV());
         exitItem.addActionListener(e->{
             DBConnection.getInstance().close();
@@ -47,11 +54,15 @@ public class MainFrame extends JFrame {
         fileMenu.add(exitItem);
 
         JMenu viewMenu = new JMenu("View");
+        viewMenu.setForeground(UIStyles.TEXT);
         JMenuItem summaryItem = new JMenuItem("Summary & Chart");
+        UIStyles.styleMenuItem(summaryItem);
         summaryItem.addActionListener(e->openSummary());
         viewMenu.add(summaryItem);
         JMenu manageMenu = new JMenu("Manage");
+        manageMenu.setForeground(UIStyles.TEXT);
         JMenuItem categoriesItem = new JMenuItem("Categories");
+        UIStyles.styleMenuItem(categoriesItem);
         categoriesItem.addActionListener(e -> openCategoryManager());
         manageMenu.add(categoriesItem);
         menuBar.add(fileMenu);
@@ -63,7 +74,8 @@ public class MainFrame extends JFrame {
     private void initToolbar(){
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
-        toolBar.setBorder(BorderFactory.createMatteBorder(0,0,1,0, Color.LIGHT_GRAY));
+        toolBar.setBackground(UIStyles.SOFT_CREAM);
+        toolBar.setBorder(BorderFactory.createMatteBorder(0,0,1,0, UIStyles.BORDER));
         toolBar.add(
                 makeIconButton("Add Expense",
                         "resources/icons/add.png",
@@ -101,17 +113,20 @@ public class MainFrame extends JFrame {
 
     private void initStatusBar(){
         JPanel statusBar = new JPanel(new BorderLayout());
-        statusBar.setBorder(BorderFactory.createMatteBorder(1,0,0,0, Color.LIGHT_GRAY));
+        statusBar.setBackground(UIStyles.WARM_FOG);
+        statusBar.setBorder(BorderFactory.createMatteBorder(1,0,0,0, UIStyles.BORDER));
         statusBar.setPreferredSize(new Dimension(0,24));
 
         statusLabel = new JLabel(" Ready");
-        statusLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        UIStyles.styleLabel(statusLabel);
+        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         statusBar.add(statusLabel, BorderLayout.WEST);
         add(statusBar, BorderLayout.SOUTH);
     }
 
     private void openSummary(){
         JDialog dialog = new JDialog(this, "Summary & Chart", true);
+        UIStyles.styleDialog(dialog);
         dialog.setSize(700, 520);
         dialog.setLocationRelativeTo(this);
         dialog.add(new SummaryPanel());
@@ -119,7 +134,7 @@ public class MainFrame extends JFrame {
 
     }
 
-    private void openCategoryManager() {
+    public void openCategoryManager() {
         new CategoryManagerDialog(this, () -> {
             expensePanel.refreshCategories();
             setStatus("Categories refreshed.");
@@ -128,6 +143,19 @@ public class MainFrame extends JFrame {
 
     public void setStatus(String message){
         statusLabel.setText(" "+ message);
+    }
+
+    private void applyAppIcon() {
+        java.net.URL iconUrl = getClass().getClassLoader().getResource("resources/icons/expense-tracker.png");
+        if (iconUrl != null) {
+            setIconImage(new ImageIcon(iconUrl).getImage());
+            return;
+        }
+
+        File developmentIcon = new File("src/resources/icons/expense-tracker.png");
+        if (developmentIcon.isFile()) {
+            setIconImage(new ImageIcon(developmentIcon.getAbsolutePath()).getImage());
+        }
     }
 
     private JButton makeIconButton(String tooltip,
@@ -155,6 +183,7 @@ public class MainFrame extends JFrame {
             btn.setText(tooltip);
             btn.setBorderPainted(true);
             btn.setContentAreaFilled(true);
+            UIStyles.styleButton(btn, false);
         }
         btn.addActionListener(action);
         return btn;
@@ -164,8 +193,11 @@ public class MainFrame extends JFrame {
 
     public static void main(String[] args) {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            Class<?> flatLightLaf = Class.forName("com.formdev.flatlaf.FlatLightLaf");
+            flatLightLaf.getMethod("setup").invoke(null);
+            UIStyles.configureDefaults();
         } catch (Exception ignored) {
+            // FlatLaf is optional while developing; Swing's default look and feel remains usable.
         }
 
         SwingUtilities.invokeLater(() -> new MainFrame().setVisible(true));

@@ -19,9 +19,15 @@ public class CategoryManagerDialog extends JDialog {
         super(parent, "Manage categories", true);
         this.afterChange = afterChange;
         setLayout(new BorderLayout(10, 10));
-        setSize(420, 330);
+        UIStyles.styleDialog(this);
+        setSize(560, 430);
+        setMinimumSize(new Dimension(560, 430));
         setLocationRelativeTo(parent);
-        add(new JScrollPane(categoryList), BorderLayout.CENTER);
+        UIStyles.styleList(categoryList);
+        JScrollPane categoryScrollPane = new JScrollPane(categoryList);
+        UIStyles.styleScrollPane(categoryScrollPane);
+        categoryScrollPane.setPreferredSize(new Dimension(520, 270));
+        add(categoryScrollPane, BorderLayout.CENTER);
         add(buildControls(), BorderLayout.SOUTH);
         reload();
     }
@@ -31,13 +37,19 @@ public class CategoryManagerDialog extends JDialog {
         JTextField colorField = new JTextField("#888888", 8);
         JButton addButton = new JButton("Add");
         JButton deleteButton = new JButton("Delete selected");
+        UIStyles.styleInput(nameField);
+        UIStyles.styleInput(colorField);
+        UIStyles.styleButton(addButton, true);
+        UIStyles.styleButton(deleteButton, UIStyles.ButtonTone.DANGER);
         addButton.addActionListener(e -> addCategory(nameField, colorField));
         deleteButton.addActionListener(e -> deleteSelected());
 
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panel.add(new JLabel("Name"));
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        panel.setBackground(UIStyles.APP_BACKGROUND);
+        panel.setBorder(BorderFactory.createEmptyBorder(4, 8, 8, 8));
+        panel.add(styledLabel("Name"));
         panel.add(nameField);
-        panel.add(new JLabel("Color"));
+        panel.add(styledLabel("Color"));
         panel.add(colorField);
         panel.add(addButton);
         panel.add(deleteButton);
@@ -85,5 +97,11 @@ public class CategoryManagerDialog extends JDialog {
 
     private void showError(String message) {
         JOptionPane.showMessageDialog(this, message, "Expense Tracker", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private JLabel styledLabel(String text) {
+        JLabel label = new JLabel(text);
+        UIStyles.styleLabel(label);
+        return label;
     }
 }
