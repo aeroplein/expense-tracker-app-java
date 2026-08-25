@@ -13,7 +13,6 @@ import java.awt.*;
 import java.io.File;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +38,7 @@ public class ExpensePanel extends JPanel implements ExpensePanelActions {
     public ExpensePanel(MainFrame parent) {
         this.parent = parent;
         setLayout(new BorderLayout());
+        setBackground(UIStyles.SOFT_CREAM);
         add(buildFilterPanel(), BorderLayout.WEST);
         add(buildTablePanel(), BorderLayout.CENTER);
         loadCategories();
@@ -48,12 +48,18 @@ public class ExpensePanel extends JPanel implements ExpensePanelActions {
     private JPanel buildFilterPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(UIStyles.WARM_FOG);
+        panel.setForeground(UIStyles.TEXT);
         panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 0, 1, Color.LIGHT_GRAY),
-                BorderFactory.createEmptyBorder(12, 10, 12, 10)));
-        panel.setPreferredSize(new Dimension(180, 0));
+                BorderFactory.createMatteBorder(0, 0, 0, 1, UIStyles.BORDER),
+                BorderFactory.createEmptyBorder(26, 24, 24, 18)));
+        panel.setPreferredSize(new Dimension(230, 0));
 
-        panel.add(new JLabel("Period"));
+        JLabel periodLabel = new JLabel("Period");
+        periodLabel.setFont(periodLabel.getFont().deriveFont(Font.PLAIN, 15f));
+        periodLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        UIStyles.styleLabel(periodLabel);
+        panel.add(periodLabel);
         radioAll = createPeriodButton("All", "ALL", true);
         radioDaily = createPeriodButton("Today", "DAILY", false);
         radioWeekly = createPeriodButton("Last 7 days", "WEEKLY", false);
@@ -68,15 +74,22 @@ public class ExpensePanel extends JPanel implements ExpensePanelActions {
         panel.add(radioWeekly);
         panel.add(radioMonthly);
 
-        panel.add(Box.createVerticalStrut(18));
-        panel.add(new JLabel("Category"));
+        panel.add(Box.createVerticalStrut(28));
+        JLabel categoryLabel = new JLabel("Category");
+        categoryLabel.setFont(categoryLabel.getFont().deriveFont(Font.PLAIN, 15f));
+        categoryLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        UIStyles.styleLabel(categoryLabel);
+        panel.add(categoryLabel);
         categoryFilter = new JComboBox<>();
-        categoryFilter.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+        UIStyles.styleInput(categoryFilter);
+        categoryFilter.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
+        categoryFilter.setAlignmentX(Component.LEFT_ALIGNMENT);
         categoryFilter.addActionListener(e -> loadExpenses());
         panel.add(categoryFilter);
 
-        panel.add(Box.createVerticalStrut(18));
+        panel.add(Box.createVerticalStrut(24));
         JButton resetButton = new JButton("Clear filters");
+        UIStyles.styleButton(resetButton, false);
         resetButton.setAlignmentX(Component.LEFT_ALIGNMENT);
         resetButton.addActionListener(e -> {
             radioAll.setSelected(true);
@@ -84,14 +97,22 @@ public class ExpensePanel extends JPanel implements ExpensePanelActions {
             loadExpenses();
         });
         panel.add(resetButton);
+        panel.add(Box.createVerticalStrut(12));
+        JButton addCategoryButton = new JButton("Add category");
+        UIStyles.styleButton(addCategoryButton, false);
+        addCategoryButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        addCategoryButton.addActionListener(e -> parent.openCategoryManager());
+        panel.add(addCategoryButton);
         panel.add(Box.createVerticalGlue());
         return panel;
     }
 
     private JRadioButton createPeriodButton(String label, String period, boolean selected) {
         JRadioButton button = new JRadioButton(label, selected);
+        UIStyles.styleRadioButton(button);
         button.setActionCommand(period);
         button.setAlignmentX(Component.LEFT_ALIGNMENT);
+        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, button.getPreferredSize().height));
         button.addActionListener(e -> loadExpenses());
         return button;
     }
@@ -107,29 +128,38 @@ public class ExpensePanel extends JPanel implements ExpensePanelActions {
         table = new JTable(tableModel);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setAutoCreateRowSorter(true);
+        UIStyles.styleTable(table);
 
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        buttons.setBackground(UIStyles.SOFT_CREAM);
         JButton addButton = new JButton("Add expense");
         JButton editButton = new JButton("Edit selected");
         JButton deleteButton = new JButton("Delete selected");
+        UIStyles.styleButton(addButton, true);
+        UIStyles.styleButton(editButton, false);
+        UIStyles.styleButton(deleteButton, UIStyles.ButtonTone.DANGER);
         addButton.addActionListener(e -> openAddDialog());
         editButton.addActionListener(e -> openEditDialog());
         deleteButton.addActionListener(e -> deleteSelected());
         buttons.add(addButton);
-        buttons.add(Box.createHorizontalStrut(8));
         buttons.add(editButton);
-        buttons.add(Box.createHorizontalStrut(8));
         buttons.add(deleteButton);
 
         totalLabel = new JLabel("Total: 0.00");
+        totalLabel.setFont(totalLabel.getFont().deriveFont(Font.PLAIN, 14f));
+        UIStyles.styleLabel(totalLabel);
         JPanel footer = new JPanel(new BorderLayout());
+        footer.setBackground(UIStyles.SOFT_CREAM);
         footer.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
         footer.add(totalLabel, BorderLayout.EAST);
 
         JPanel panel = new JPanel(new BorderLayout(0, 10));
+        panel.setBackground(UIStyles.SOFT_CREAM);
         panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         panel.add(buttons, BorderLayout.NORTH);
-        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        JScrollPane tableScrollPane = new JScrollPane(table);
+        UIStyles.styleScrollPane(tableScrollPane);
+        panel.add(tableScrollPane, BorderLayout.CENTER);
         panel.add(footer, BorderLayout.SOUTH);
         return panel;
     }
@@ -151,38 +181,26 @@ public class ExpensePanel extends JPanel implements ExpensePanelActions {
     }
 
     private void showExpenseDialog(Expense existing) {
-        JTextField amountField = new JTextField(existing == null ? "" : String.valueOf(existing.getAmount()));
-        JTextField descriptionField = new JTextField(existing == null ? "" : existing.getDescription());
-        JComboBox<Category> categoryBox = new JComboBox<>();
-        for (Category category : getCategories()) categoryBox.addItem(category);
-        if (existing != null) selectCategory(categoryBox, existing.getCategory_id());
-        JTextField dateField = new JTextField(existing == null ? LocalDate.now().toString() : existing.getExpenseDate().toString());
-
-        JPanel form = new JPanel(new GridLayout(0, 2, 8, 8));
-        form.add(new JLabel("Amount *")); form.add(amountField);
-        form.add(new JLabel("Description")); form.add(descriptionField);
-        form.add(new JLabel("Category *")); form.add(categoryBox);
-        form.add(new JLabel("Date (yyyy-MM-dd) *")); form.add(dateField);
-
-        int result = JOptionPane.showConfirmDialog(parent, form,
-                existing == null ? "Add expense" : "Edit expense", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        if (result != JOptionPane.OK_OPTION) return;
+        ExpenseFormDialog dialog = new ExpenseFormDialog(parent, existing, getCategories());
+        dialog.setVisible(true);
+        if (!dialog.isConfirmed()) return;
 
         try {
-            Category selectedCategory = (Category) categoryBox.getSelectedItem();
+            Category selectedCategory = dialog.getSelectedCategory();
             if (selectedCategory == null) throw new IllegalArgumentException("Create a category before adding an expense.");
+            double amount = dialog.getAmount();
             Expense expense = existing == null
-                    ? new Expense(Double.parseDouble(amountField.getText().trim()), descriptionField.getText().trim(),
-                    selectedCategory.getId(), DEMO_USER_ID, LocalDate.parse(dateField.getText().trim()))
-                    : new Expense(existing.getId(), Double.parseDouble(amountField.getText().trim()), descriptionField.getText().trim(),
-                    selectedCategory.getId(), DEMO_USER_ID, LocalDate.parse(dateField.getText().trim()));
+                    ? new Expense(amount, dialog.getDescription(), selectedCategory.getId(), DEMO_USER_ID,
+                    dialog.getSelectedDate())
+                    : new Expense(existing.getId(), amount, dialog.getDescription(),
+                    selectedCategory.getId(), DEMO_USER_ID, dialog.getSelectedDate());
             if (existing == null) expenseService.addExpense(expense); else expenseService.updateExpense(expense);
             parent.setStatus(existing == null ? "Expense added." : "Expense updated.");
             loadExpenses();
         } catch (NumberFormatException e) {
             showError("Amount must be a valid number.", e);
-        } catch (DateTimeParseException e) {
-            showError("Date must use yyyy-MM-dd, for example 2026-08-25.", e);
+        } catch (java.text.ParseException e) {
+            showError("Amount must be a valid number.", e);
         } catch (IllegalArgumentException | SQLException e) {
             showError(e.getMessage(), e);
         }
@@ -265,15 +283,6 @@ public class ExpensePanel extends JPanel implements ExpensePanelActions {
         }
     }
 
-    private void selectCategory(JComboBox<Category> categoryBox, int categoryId) {
-        for (int index = 0; index < categoryBox.getItemCount(); index++) {
-            if (categoryBox.getItemAt(index).getId() == categoryId) {
-                categoryBox.setSelectedIndex(index);
-                return;
-            }
-        }
-    }
-
     private int selectedExpenseId() {
         int viewRow = table.getSelectedRow();
         if (viewRow == -1) {
@@ -296,4 +305,5 @@ public class ExpensePanel extends JPanel implements ExpensePanelActions {
         JOptionPane.showMessageDialog(parent, message, "Expense Tracker", JOptionPane.ERROR_MESSAGE);
         exception.printStackTrace();
     }
+
 }

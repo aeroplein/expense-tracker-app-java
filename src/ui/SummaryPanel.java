@@ -25,19 +25,30 @@ public class SummaryPanel extends JPanel {
 
     public SummaryPanel() {
         setLayout(new BorderLayout(12, 12));
+        setBackground(UIStyles.SOFT_CREAM);
         setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
 
         JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 18, 0));
+        header.setBackground(UIStyles.SOFT_CREAM);
+        UIStyles.styleLabel(totalLabel);
+        UIStyles.styleLabel(countLabel);
+        totalLabel.setFont(totalLabel.getFont().deriveFont(Font.PLAIN, 15f));
+        countLabel.setForeground(UIStyles.MUTED_TEXT);
         header.add(totalLabel);
         header.add(countLabel);
         JButton refreshButton = new JButton("Refresh");
+        UIStyles.styleButton(refreshButton, false);
         refreshButton.addActionListener(e -> refresh());
         header.add(refreshButton);
         add(header, BorderLayout.NORTH);
 
         JTable categoryTable = new JTable(categoryModel);
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                new JScrollPane(categoryTable), chart);
+        UIStyles.styleTable(categoryTable);
+        JScrollPane categoryScrollPane = new JScrollPane(categoryTable);
+        UIStyles.styleScrollPane(categoryScrollPane);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, categoryScrollPane, chart);
+        splitPane.setBackground(UIStyles.SOFT_CREAM);
+        splitPane.setBorder(BorderFactory.createEmptyBorder());
         splitPane.setResizeWeight(0.45);
         add(splitPane, BorderLayout.CENTER);
         refresh();
@@ -65,7 +76,7 @@ public class SummaryPanel extends JPanel {
 
         CategoryChart() {
             setPreferredSize(new Dimension(500, 220));
-            setBackground(Color.WHITE);
+            setBackground(UIStyles.SOFT_CREAM);
         }
 
         void setValues(Map<String, Double> values) {
@@ -91,11 +102,11 @@ public class SummaryPanel extends JPanel {
                 for (Map.Entry<String, Double> entry : values.entrySet()) {
                     int y = top + index * rowHeight;
                     int width = maximum == 0 ? 0 : (int) (barWidth * entry.getValue() / maximum);
-                    g.setColor(Color.DARK_GRAY);
+                    g.setColor(UIStyles.TEXT);
                     g.drawString(entry.getKey(), 12, y + 15);
-                    g.setColor(new Color(70, 130, 180));
+                    g.setColor(UIStyles.DARK_BERRY);
                     g.fillRect(left, y, width, 18);
-                    g.setColor(Color.DARK_GRAY);
+                    g.setColor(UIStyles.TEXT);
                     g.drawString(String.format("%.2f", entry.getValue()), left + width + 6, y + 15);
                     index++;
                 }
